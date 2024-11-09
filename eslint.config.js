@@ -212,7 +212,7 @@ export default [
       'max-lines-per-function': [
         'error',
         {
-          max: 15, // 함수 또는 메서드가 최대 15라인을 넘지 않도록 설정합니다.
+          max: 10, // 함수 또는 메서드가 최대 10라인을 넘지 않도록 설정합니다.
           skipComments: true, // true로 설정 시, 주석 라인은 길이 제한에 포함되지 않습니다.
           skipBlankLines: true, // true로 설정 시, 빈 줄은 길이 제한에 포함되지 않습니다.
         },
