@@ -198,7 +198,7 @@ export default [
       // parseInt에 대한 radix 인수 사용 강제
       radix: 'error',
       // 식별자 길이 제한
-      'id-length': ['error', { min: 2, max: 30 }],
+      'id-length': ['error', { min: 2, max: 50 }],
       // camelCase 사용 강제
       camelcase: ['error', { properties: 'always' }],
       // 대문자로 시작하는 생성자 사용 강제
