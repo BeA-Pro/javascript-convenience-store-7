@@ -48,11 +48,7 @@ const expectLogContainsWithoutSpacesAndEquals = (received, expects) => {
   });
 };
 
-const runExceptions = async ({
-  inputs = [],
-  inputsToTerminate = [],
-  expectedErrorMessage = '',
-}) => {
+const runExceptions = async ({ inputs = [], inputsToTerminate = [], expectedErrorMessage = '' }) => {
   // given
   const logSpy = getLogSpy();
   mockQuestions([...inputs, ...inputsToTerminate]);
@@ -65,12 +61,7 @@ const runExceptions = async ({
   expect(logSpy).toHaveBeenCalledWith(expect.stringContaining(expectedErrorMessage));
 };
 
-const run = async ({
-  inputs = [],
-  inputsToTerminate = [],
-  expected = [],
-  expectedIgnoringWhiteSpaces = [],
-}) => {
+const run = async ({ inputs = [], inputsToTerminate = [], expected = [], expectedIgnoringWhiteSpaces = [] }) => {
   // given
   const logSpy = getLogSpy();
   mockQuestions([...inputs, ...inputsToTerminate]);
