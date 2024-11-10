@@ -48,7 +48,7 @@ class App {
   #addPromotion(promotions) {
     this.#promotionInfo = promotions.reduce((acc, promotion) => {
       const [name, buy, get, startDate, endDate] = splitter(promotion, ',');
-      acc.push({ name, buy, get, startDate, endDate });
+      acc.push({ name, buy: Number(buy), get: Number(get), startDate, endDate });
       return acc;
     }, []);
   }
