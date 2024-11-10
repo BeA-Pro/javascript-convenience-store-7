@@ -3,15 +3,22 @@ import splitter from './utils/splitter.js';
 import Validate from './utils/validate.js';
 import OutputView from './views/output.js';
 import InputView from './views/input.js';
+import InventoryModel from './models/InventoryModel.js';
+import PromotionModel from './models/PromotionModel.js';
 
 class App {
-  #inventoryInfo;
-  #promotionInfo;
+  #inventoryModel;
+  #promotionModel;
+
+  constructor() {
+    this.#inventoryModel = new InventoryModel();
+    this.#promotionModel = new PromotionModel();
+  }
 
   async run() {
     await this.#intiate();
-    OutputView.printProducts(this.#inventoryInfo);
-    const buyInfo = await InputView.buyInfo();
+    OutputView.printProducts(this.#inventoryModel.getInventory());
+    const buyInfo = await InputView.readBuyInfo();
   }
 
   async #intiate() {
@@ -33,22 +40,13 @@ class App {
   }
 
   #addInventory(products) {
-    const strInfo = products.reduce((acc, product) => {
+    products.forEach((product) => {
       const [name, quantity, price, promotion] = splitter(product, ',');
-      acc.push({ name, quantity, price, promotion });
-      return acc;
-    }, []);
-    this.#validateAndChangeStrToProductType(strInfo);
-  }
-
-  #validateAndChangeStrToProductType(strInfo) {
-    this.#inventoryInfo = strInfo.reduce((acc, strProduct) => {
-      Validate.product(strProduct);
-      acc.push({
-        name: strProduct.name, quantity: Number(strProduct.quantity), price: Number(strProduct.price), promotion: strProduct.promotion,
+      Validate.product({ name, quantity, price, promotion });
+      this.#inventoryModel.addProduct({
+        name, quantity: Number(quantity), price: Number(price), promotion,
       });
-      return acc;
-    }, []);
+    });
   }
 
   async #getPromotionInfoFromMd() {
@@ -63,23 +61,14 @@ class App {
   }
 
   #addPromotion(promotions) {
-    const strInfo = promotions.reduce((acc, promotion) => {
+    promotions.forEach((promotion) => {
       const [name, buy, get, startDate, endDate] = splitter(promotion, ',');
-      acc.push({ name, buy: Number(buy), get: Number(get), startDate, endDate });
-      return acc;
-    }, []);
-    this.#validateAndChangeStrToPromotionType(strInfo);
+      Validate.promotion({ name, buy, get, startDate, endDate });
+      const realEndDate = new Date(endDate);
+      realEndDate.setDate(realEndDate.getDate() + 1);
+      this.#promotionModel.addPromotion({ name, buy: Number(buy), get: Number(get), startDate: new Date(startDate), realEndDate });
+    });
   }
-
-  #validateAndChangeStrToPromotionType(strInfo) {
-    this.#promotionInfo = strInfo.reduce((acc, strPro) => {
-      Validate.promotion(strPro);
-      const endDate = new Date(strPro.endDate);
-      endDate.setDate(endDate.getDate() + 1);
-      acc.push({ name: strPro.name, buy: Number(strPro.buy), get: Number(strPro.get), startDate: new Date(strPro.startDate), endDate });
-      return acc;
-    }, []);
-  };
 }
 
 export default App;
