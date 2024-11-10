@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import splitter from './utils/splitter.js';
+import Validate from './utils/validate.js';
 
 class App {
   #inventoryInfo;
@@ -27,9 +28,20 @@ class App {
   }
 
   #addInventory(products) {
-    this.#inventoryInfo = products.reduce((acc, product) => {
+    const strInfo = products.reduce((acc, product) => {
       const [name, quantity, price, promotion] = splitter(product, ',');
       acc.push({ name, quantity, price, promotion });
+      return acc;
+    }, []);
+    this.#validateAndChangeStrToProductType(strInfo);
+  }
+
+  #validateAndChangeStrToProductType(strInfo) {
+    this.#inventoryInfo = strInfo.reduce((acc, strProduct) => {
+      Validate.product(strProduct);
+      acc.push({
+        name: strProduct.name, quantity: Number(strProduct.quantity), price: Number(strProduct.price), promotion: strProduct.promotion,
+      });
       return acc;
     }, []);
   }
@@ -46,12 +58,23 @@ class App {
   }
 
   #addPromotion(promotions) {
-    this.#promotionInfo = promotions.reduce((acc, promotion) => {
+    const strInfo = promotions.reduce((acc, promotion) => {
       const [name, buy, get, startDate, endDate] = splitter(promotion, ',');
       acc.push({ name, buy: Number(buy), get: Number(get), startDate, endDate });
       return acc;
     }, []);
+    this.#validateAndChangeStrToPromotionType(strInfo);
   }
+
+  #validateAndChangeStrToPromotionType(strInfo) {
+    this.#promotionInfo = strInfo.reduce((acc, strPro) => {
+      Validate.promotion(strPro);
+      const endDate = new Date(strPro.endDate);
+      endDate.setDate(endDate.getDate() + 1);
+      acc.push({ name: strPro.name, buy: Number(strPro.buy), get: Number(strPro.get), startDate: new Date(strPro.startDate), endDate });
+      return acc;
+    }, []);
+  };
 }
 
 export default App;
