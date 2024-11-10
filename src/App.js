@@ -1,12 +1,15 @@
 import fs from 'fs/promises';
 import splitter from './utils/splitter.js';
 import Validate from './utils/validate.js';
+import OutputView from './View/output.js';
 
 class App {
   #inventoryInfo;
   #promotionInfo;
+
   async run() {
-    this.#intiate();
+    await this.#intiate();
+    OutputView.printProducts(this.#inventoryInfo);
   }
 
   async #intiate() {
