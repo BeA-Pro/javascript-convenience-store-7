@@ -11,10 +11,10 @@ class InformationController {
     this.#promotionModel = new PromotionModel();
   };
 
-  addProduct({ name, quantity, price, promotion }) {
-    Validate.product({ name, quantity, price, promotion });
+  addProduct({ name, price, quantity, promotion }) {
+    Validate.product({ name, price, quantity, promotion });
     this.#inventoryModel.addProduct({
-      name, quantity: Number(quantity), price: Number(price), promotion,
+      name, price: Number(price), quantity: Number(quantity), promotion,
     });
   }
 
@@ -22,11 +22,15 @@ class InformationController {
     Validate.promotion({ name, buy, get, startDate, endDate });
     const realEndDate = new Date(endDate);
     realEndDate.setDate(realEndDate.getDate() + 1);
-    this.#promotionModel.addPromotion({ name, buy: Number(buy), get: Number(get), startDate: new Date(startDate), realEndDate });
+    this.#promotionModel.addPromotion({ name, buy: Number(buy), get: Number(get), startDate: new Date(startDate), endDate: realEndDate });
   }
 
   getInventory() {
     return this.#inventoryModel.getInventory();
+  }
+
+  getPromotion() {
+    return this.#promotionModel.getPromotions();
   }
 }
 

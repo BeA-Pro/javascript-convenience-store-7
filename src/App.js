@@ -1,6 +1,5 @@
 import fs from 'fs/promises';
 import splitter from './utils/splitter.js';
-import Validate from './utils/validate.js';
 import OutputView from './views/output.js';
 import InputView from './views/input.js';
 import InformationController from './controllers/InformationController.js';
@@ -19,9 +18,11 @@ class App {
 
   async run() {
     await this.#addDatas();
-
     OutputView.printProducts(this.#informationController.getInventory());
-    const buyInfo = await InputView.readBuyInfo();
+    const orders = splitter(await InputView.readOrder(), ',');
+    orders.forEach((order) => {
+      this.#checkController.checkOrder(order);
+    });
   }
 
   async #addDatas() {
@@ -44,8 +45,8 @@ class App {
 
   #addProducts(products) {
     products.forEach((product) => {
-      const [name, quantity, price, promotion] = splitter(product, ',');
-      this.#informationController.addProduct({ name, quantity, price, promotion });
+      const [name, price, quantity, promotion] = splitter(product, ',');
+      this.#informationController.addProduct({ name, price, quantity, promotion });
     });
   }
 
