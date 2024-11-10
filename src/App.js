@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
 import splitter from './utils/splitter.js';
 import Validate from './utils/validate.js';
-import OutputView from './View/output.js';
-import InputView from './View/input.js';
+import OutputView from './views/output.js';
+import InputView from './views/input.js';
 
 class App {
   #inventoryInfo;
