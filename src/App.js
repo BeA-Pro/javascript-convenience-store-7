@@ -10,6 +10,8 @@ class App {
   #informationController;
   #checkController;
   #buyController;
+  #YES = 'Y';
+  #NO = 'N';
   constructor() {
     this.#informationController = new InformationController();
     this.#checkController = new CheckController(this.#informationController);
@@ -20,9 +22,9 @@ class App {
     await this.#addDatas();
     OutputView.printProducts(this.#informationController.getInventory());
     const orders = splitter(await InputView.readOrder(), ',');
-    orders.forEach((order) => {
-      this.#checkController.checkOrder(order);
-    });
+    const buyList = await this.#getBuyList(orders);
+    const membership = await this.#isMembership();
+    const getReceiptInfo = this.#buyController.run(buyList, membership);
   }
 
   async #addDatas() {
@@ -65,6 +67,54 @@ class App {
       const [name, buy, get, startDate, endDate] = splitter(promotion, ',');
       this.#informationController.addPromotion({ name, buy, get, startDate, endDate });
     });
+  }
+
+  async #getBuyList(orders) {
+    const list = [];
+    for (const order of orders) {
+      const buyInfo = await this.#addBuyInfo(order);
+      if (buyInfo) list.push(buyInfo);
+    }
+    return list;
+  }
+  async #addBuyInfo(order) {
+    const [name, defaultCnt, promoCnt, giftCnt, canGiftCnt, notPromoCnt, isPromotion] = this.#checkController.checkOrder(order);
+    let canGiftCnt2 = canGiftCnt;
+    if (isPromotion) {
+      const [notBuy, getGift] = await this.#resolvePromotionCase(name, notPromoCnt, canGiftCnt);
+      if (notBuy) return null;
+      if (!getGift) canGiftCnt2 = 0;
+    }
+    return { name, defaultCnt, promoCnt, giftCnt, canGift: canGiftCnt2, notPromoCnt, isPromotion };
+  }
+
+  async #resolvePromotionCase(name, notPromoCnt, canGiftCnt) {
+    let notBuy = false;
+    let getGift = false;
+    // 정가 구매 제안하는 경우
+    if (notPromoCnt > 0) notBuy = await this.#getSuggestBuyAnswer(name, notPromoCnt);
+    else if (canGiftCnt > 0) getGift = await this.#getSuggestGiftAnswer(name, canGiftCnt);
+    return [notBuy, getGift];
+  }
+
+  async #getSuggestBuyAnswer(name, notPromoCnt) {
+    const answer = await InputView.suggestBuy(name, notPromoCnt);
+    if (answer !== this.#YES && answer !== this.#NO) throw new Error('[ERROR] Y와 N으로만 응답하여 주세요');
+    if (answer === this.#YES) return false;
+    return true;
+  }
+  async #getSuggestGiftAnswer(name, canGiftCnt) {
+    const answer = await InputView.suggestGift(name, canGiftCnt);
+    if (answer !== this.#YES && answer !== this.#NO) throw new Error('[ERROR] Y와 N으로만 응답하여 주세요');
+    if (answer === this.#NO) return false;
+    return true;
+  }
+
+  async #isMembership() {
+    const answer = await InputView.suggestMembership();
+    if (answer !== this.#YES && answer !== this.#NO) throw new Error('[ERROR] Y와 N으로만 응답하여 주세요');
+    if (answer === this.#NO) return false;
+    return true;
   }
 }
 

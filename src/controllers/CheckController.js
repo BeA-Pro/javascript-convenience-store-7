@@ -4,6 +4,7 @@ import { DateTimes } from '@woowacourse/mission-utils';
 
 class CheckController {
   #inventoryModel;
+  #NONE = 0;
   constructor(inventoryModel) {
     this.#inventoryModel = inventoryModel;
   }
@@ -16,6 +17,8 @@ class CheckController {
 
     const defaultCnt = this.#getDefaultProductInventory(name);
     const [buy, get, promoCnt, isPromotion] = this.#getPromotionProductInventory(name);
+    if (isPromotion) return this.#calculatePromtionCase(name, buy, get, defaultCnt, promoCnt, quantity);
+    return this.#caculateDefaultCase(name, defaultCnt, quantity);
   }
 
   #checkProductName(name) {
@@ -47,6 +50,22 @@ class CheckController {
     const now = DateTimes.now();
     if (now < promoInfo.startDate || now > promoInfo.endDate) return [0, 0, false];
     return [promoInfo.buy, promoInfo.get, true];
+  }
+
+  #calculatePromtionCase(name, buy, get, defaultCnt, promoCnt, buyCnt) {
+    const maxSets = Math.floor(buyCnt / (buy + get));
+    const leftBuyCnt = buyCnt - (maxSets * (buy + get));
+    if (leftBuyCnt === buy && promoCnt - (maxSets * (buy + get)) - buy >= get) {
+      return [name, this.#NONE, maxSets * buy, maxSets * get, get, this.#NONE, true];
+    }
+    if (leftBuyCnt > defaultCnt) throw new Error(`[ERROR] ${name}의 재고가 부족합니다.`);
+
+    return [name, this.#NONE, maxSets * buy, maxSets * get, this.#NONE, leftBuyCnt, true];
+  }
+
+  #caculateDefaultCase(name, defaultCnt, buyCnt) {
+    if (defaultCnt < buyCnt) throw new Error(`[ERROR] ${name}는 ${defaultCnt}이하만 구매가능합니다.\n`);
+    return [name, defaultCnt, this.#NONE, this.#NONE, this.#NONE, this.#NONE, false];
   }
 }
 
